@@ -91,23 +91,30 @@
     const defaultText = "손으로 1번(☝️) 또는 2번(✌️)을 표시해 주십시오";
 
 
-    // 1. MediaPipe Gesture Recognizer 초기화
+    // 1. MediaPipe Gesture Recognizer 초기화 (보안 및 경로 강화 버전)
     async function initGestureRecognizer() {
-        const vision = await FilesetResolver.forVisionTasks(
-            "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm"
-        );
-        
-        gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
-            baseOptions: {
-                modelAssetPath: "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task",
-                delegate: "GPU"
-            },
-            runningMode: "VIDEO"
-        });
-        
-        loadingText.style.display = "none";
-        startWebcam();
+        try {
+            // 주소 끝에 '/'를 명확히 붙여서 파일 유실을 방지합니다.
+            const vision = await FilesetResolver.forVisionTasks(
+                "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm/"
+            );
+            
+            gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
+                baseOptions: {
+                    modelAssetPath: "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task",
+                    delegate: "GPU"
+                },
+                runningMode: "VIDEO"
+            });
+            
+            loadingText.style.display = "none";
+            startWebcam();
+        } catch (error) {
+            console.error("모델 로딩 실패:", error);
+            loadingText.innerText = "모델을 불러오지 못했습니다. 새로고침을 해주세요.";
+        }
     }
+
 
 
     // 2. 웹캠 시작
